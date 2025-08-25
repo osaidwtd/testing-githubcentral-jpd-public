@@ -23,7 +23,7 @@ jobs:
         env:
           JF_URL: https://635726ee2cd1.ngrok-free.app
         with:
-          oidc-provider-name: providerowtd
+          oidc-provider-name: providerwtd
       - name: Push To Artifactory
         id: build
         env:
