@@ -21,9 +21,9 @@ jobs:
       - name: Setup JFrog CLI
         uses: jfrog/setup-jfrog-cli@v4
         env:
-          JF_URL: ${{ vars.JF_URL }}
+          JF_URL: https://635726ee2cd1.ngrok-free.app
         with:
-          oidc-provider-name: swampup-2025/testing-githubcentral-jpd-public@github
+          oidc-provider-name: providerowtd
       - name: Push To Artifactory
         id: build
         env:
