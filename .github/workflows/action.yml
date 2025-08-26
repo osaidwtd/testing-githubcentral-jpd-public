@@ -22,8 +22,9 @@ jobs:
         uses: jfrog/setup-jfrog-cli@v4
         env:
           JF_URL: https://635726ee2cd1.ngrok-free.app
+          JF_ACCESS_TOKEN: ${{secrets.JF_ACCESS_TOKEN}}
         with:
-          oidc-provider-name: providerwtd
+          # oidc-provider-name: providerwtd
           version: latest
       - name: Push To Artifactory
         id: build
