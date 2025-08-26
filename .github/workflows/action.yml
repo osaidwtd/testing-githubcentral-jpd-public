@@ -21,7 +21,7 @@ jobs:
       - name: Setup JFrog CLI
         uses: jfrog/setup-jfrog-cli@v4
         env:
-          JF_URL: https://635726ee2cd1.ngrok-free.app
+          JF_URL: https://b9bdf86f6284.ngrok-free.app
           JF_ACCESS_TOKEN: ${{secrets.JF_ACCESS_TOKEN}}
         with:
           # oidc-provider-name: providerwtd
