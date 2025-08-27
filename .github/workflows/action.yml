@@ -29,8 +29,8 @@ jobs:
       - name: Push To Artifactory
         id: build
         env:
-          FILE_NAME: "artifact.txt"
-          JF_REPO_KEY: "example-repo-local"
+          FILE_NAME: "commons-1.0.0.txt"
+          JF_REPO_KEY: "commons-dev-generic-local"
           TARGET_PATH_IN_REPO: "runs/${{ github.run_number }}"
         run: |
           
