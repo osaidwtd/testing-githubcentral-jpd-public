@@ -1,0 +1,68 @@
+name: Hello World
+
+on:
+  workflow_dispatch:
+
+jobs:
+  hello-world:
+    runs-on: ubuntu-latest
+    permissions:
+      attestations: write
+      contents: read
+      actions: read
+      id-token: write
+
+    env:
+      # === Your existing artifact in Artifactory ===
+      ARTIFACT_REPO: "commons-dev-generic-local"
+      ARTIFACT_PATH: "commons-1.0.0.txt"
+      # Optional: the SHA256 you expect (from your message)
+      EXPECTED_SHA256: "f87e4c72e60300b451739d545afc0251a6e2f4bd1beaa1902ba739455897ecb8"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JF_URL: https://bd347023f759.ngrok-free.app
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+        with:
+          version: latest
+
+      - name: Resolve artifact metadata from Artifactory (no upload)
+        id: resolve
+        run: |
+          set -euo pipefail
+          TARGET_NAME="${ARTIFACT_REPO}/${ARTIFACT_PATH}"
+
+          echo "Checking existence and metadata for: ${TARGET_NAME}"
+          # Query Artifactory metadata (returns checksums)
+          RESP="$(jf rt curl -XGET "/api/storage/${TARGET_NAME}")"
+
+          # Fail early if not found (HTTP error makes jf exit non-zero)
+          SHA256_DIGEST="$(echo "${RESP}" | jq -r '.checksums.sha256')"
+          if [ -z "${SHA256_DIGEST}" ] || [ "${SHA256_DIGEST}" = "null" ]; then
+            echo "Could not read sha256 for ${TARGET_NAME}."
+            exit 1
+          fi
+
+          echo "Found sha256 on server: ${SHA256_DIGEST}"
+
+          # Optional sanity check against the provided SHA256
+          if [ -n "${EXPECTED_SHA256}" ] && [ "${EXPECTED_SHA256}" != "${SHA256_DIGEST}" ]; then
+            echo "::warning::Provided EXPECTED_SHA256 does not match Artifactory sha256."
+            echo "Expected: ${EXPECTED_SHA256}"
+            echo "Server:   ${SHA256_DIGEST}"
+          fi
+
+          echo "artifact_subject_name=${TARGET_NAME}" >> "$GITHUB_OUTPUT"
+          echo "artifact_digest=${SHA256_DIGEST}" >> "$GITHUB_OUTPUT"
+
+      - name: Create build-provenance attestation
+        id: attest
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ steps.resolve.outputs.artifact_subject_name }}
+          subject-digest: sha256:${{ steps.resolve.outputs.artifact_digest }}
